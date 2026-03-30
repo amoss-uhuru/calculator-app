@@ -1,23 +1,58 @@
+const display = document.getElementById("display");
+const historyList = document.getElementById("historyList");
+
+// Load history from browser
+window.onload = function () {
+  const saved = JSON.parse(localStorage.getItem("history")) || [];
+  saved.forEach(addToHistoryUI);
+};
+
 function appendValue(value) {
-  document.getElementById("display").value += value;
+  display.value += value;
 }
 
 function clearDisplay() {
-  document.getElementById("display").value = "";
+  display.value = "";
 }
 
 function deleteLast() {
-  let current = document.getElementById("display").value;
-  document.getElementById("display").value = current.slice(0, -1);
+  display.value = display.value.slice(0, -1);
 }
 
 function calculate() {
   try {
-    let result = eval(document.getElementById("display").value);
-    document.getElementById("display").value = result;
+    let expression = display.value;
+    let result = eval(expression);
+
+    display.value = result;
+
+    const entry = expression + " = " + result;
+    saveToHistory(entry);
+    addToHistoryUI(entry);
+
   } catch {
-    document.getElementById("display").value = "Error";
+    display.value = "Error";
   }
+}
+
+// Save to local storage
+function saveToHistory(entry) {
+  let history = JSON.parse(localStorage.getItem("history")) || [];
+  history.unshift(entry);
+  localStorage.setItem("history", JSON.stringify(history));
+}
+
+// Add to UI
+function addToHistoryUI(entry) {
+  const li = document.createElement("li");
+  li.textContent = entry;
+  historyList.prepend(li);
+}
+
+// Clear history
+function clearHistory() {
+  localStorage.removeItem("history");
+  historyList.innerHTML = "";
 }
 
 // Keyboard support
