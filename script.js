@@ -1,16 +1,14 @@
-function appendValue(value) {
-  document.getElementById("display").value += value;
-}
+document.addEventListener("keydown", function(event) {
+  const key = event.key;
 
-function clearDisplay() {
-  document.getElementById("display").value = "";
-}
-
-function calculate() {
-  try {
-    const result = eval(document.getElementById("display").value);
-    document.getElementById("display").value = result;
-  } catch {
-    document.getElementById("display").value = "Error";
+  if (!isNaN(key) || "+-*/.".includes(key)) {
+    appendValue(key);
+  } else if (key === "Enter") {
+    calculate();
+  } else if (key === "Backspace") {
+    let current = document.getElementById("display").value;
+    document.getElementById("display").value = current.slice(0, -1);
+  } else if (key.toLowerCase() === "c") {
+    clearDisplay();
   }
-}
+});
