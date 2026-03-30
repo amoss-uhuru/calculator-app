@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Calculator</title>
+  <title>Pro Calculator</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
+<div class="container">
 
   <div class="calculator">
     <input type="text" id="display" disabled>
@@ -35,7 +37,17 @@
     </div>
   </div>
 
-  <script src="script.js"></script>
+  <div class="history">
+    <div class="history-header">
+      <h3>History</h3>
+      <button onclick="clearHistory()">Clear</button>
+    </div>
+    <ul id="historyList"></ul>
+  </div>
+
+</div>
+
+<script src="script.js"></script>
 
 </body>
 </html>
