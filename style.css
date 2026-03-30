@@ -1,11 +1,16 @@
 body {
   font-family: Arial, sans-serif;
-  background: #1e1e2f;
+  background: linear-gradient(135deg, #1e1e2f, #12121c);
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
   margin: 0;
+}
+
+.container {
+  display: flex;
+  gap: 20px;
 }
 
 .calculator {
@@ -48,6 +53,7 @@ button {
 
 button:hover {
   background: #6c6cb3;
+  transform: scale(1.05);
 }
 
 .equals {
@@ -60,4 +66,41 @@ button:hover {
 
 .zero {
   grid-column: span 2;
+}
+
+/* HISTORY PANEL */
+
+.history {
+  background: #2d2d44;
+  padding: 15px;
+  border-radius: 15px;
+  width: 200px;
+  color: white;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.history button {
+  background: #ff4d4d;
+  font-size: 12px;
+  padding: 5px 10px;
+}
+
+#historyList {
+  list-style: none;
+  padding: 0;
+  margin-top: 10px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+#historyList li {
+  padding: 5px 0;
+  border-bottom: 1px solid #444;
+  font-size: 14px;
 }
