@@ -1,55 +1,38 @@
 // script.js
 document.addEventListener('DOMContentLoaded', () => {
-    // DOM elements
+    // DOM references
     const expressionEl = document.getElementById('expression');
-    const resultEl = document.getElementById('result');
+    const subtextEl = document.getElementById('subtext');
     const historyList = document.getElementById('historyList');
     const clearHistoryBtn = document.getElementById('clearHistoryBtn');
-    const themeSwitch = document.getElementById('themeSwitch');
+    const themeToggle = document.getElementById('themeToggle');
 
+    // Calculator state
     let currentInput = '0';
     let previousInput = '';
-    let operator = null;
-    let waitingForOperand = false;
+    let currentOperator = null;
+    let shouldResetScreen = false;
     let history = [];
 
-    // Helper: update display
+    // Helper: format numbers (avoid excessive decimals)
+    function formatNumber(numStr) {
+        let num = parseFloat(numStr);
+        if (isNaN(num)) return '0';
+        if (Number.isInteger(num)) return num.toString();
+        return num.toFixed(8).replace(/\.?0+$/, '');
+    }
+
+    // Update main display
     function updateDisplay() {
-        expressionEl.textContent = currentInput;
-        if (previousInput && operator) {
-            expressionEl.textContent = `${previousInput} ${operator} ${currentInput}`;
+        if (currentOperator && previousInput !== '') {
+            expressionEl.textContent = `${formatNumber(previousInput)} ${currentOperator} ${formatNumber(currentInput)}`;
+        } else {
+            expressionEl.textContent = formatNumber(currentInput);
         }
+        subtextEl.textContent = '';
     }
 
-    // Helper: evaluate expression
-    function evaluate() {
-        let result;
-        try {
-            const expression = `${previousInput}${operator}${currentInput}`;
-            // Use Function to evaluate safely (allows basic math)
-            const evalExpr = new Function('return (' + expression + ')');
-            result = evalExpr();
-            if (isNaN(result) || !isFinite(result)) throw new Error('Invalid calculation');
-            // Add to history
-            addToHistory(`${expression} = ${result}`);
-            // Update current input with result
-            currentInput = String(result);
-            previousInput = '';
-            operator = null;
-            waitingForOperand = true;
-        } catch (error) {
-            resultEl.textContent = 'Error';
-            setTimeout(() => { resultEl.textContent = ''; }, 1500);
-            currentInput = '0';
-            previousInput = '';
-            operator = null;
-            waitingForOperand = false;
-        }
-        updateDisplay();
-        resultEl.textContent = '';
-    }
-
-    // Add to history
+    // Add to history panel
     function addToHistory(entry) {
         history.unshift(entry);
         if (history.length > 20) history.pop();
@@ -69,11 +52,50 @@ document.addEventListener('DOMContentLoaded', () => {
         renderHistory();
     }
 
-    // Handle number input
+    // Core evaluation
+    function evaluate() {
+        if (previousInput === '' || currentOperator === null) return;
+
+        const prev = parseFloat(previousInput);
+        const current = parseFloat(currentInput);
+        if (isNaN(prev) || isNaN(current)) {
+            subtextEl.textContent = 'Invalid input';
+            setTimeout(() => subtextEl.textContent = '', 1000);
+            return;
+        }
+
+        let result;
+        switch (currentOperator) {
+            case '+': result = prev + current; break;
+            case '-': result = prev - current; break;
+            case '×': result = prev * current; break;
+            case '÷':
+                if (current === 0) {
+                    subtextEl.textContent = 'Cannot divide by zero';
+                    setTimeout(() => subtextEl.textContent = '', 1000);
+                    return;
+                }
+                result = prev / current;
+                break;
+            default: return;
+        }
+
+        const formattedResult = formatNumber(result.toString());
+        const historyEntry = `${formatNumber(previousInput)} ${currentOperator} ${formatNumber(currentInput)} = ${formattedResult}`;
+        addToHistory(historyEntry);
+
+        currentInput = formattedResult;
+        previousInput = '';
+        currentOperator = null;
+        shouldResetScreen = true;
+        updateDisplay();
+    }
+
+    // Number input
     function inputNumber(num) {
-        if (waitingForOperand) {
+        if (shouldResetScreen) {
             currentInput = num;
-            waitingForOperand = false;
+            shouldResetScreen = false;
         } else {
             currentInput = currentInput === '0' ? num : currentInput + num;
         }
@@ -81,9 +103,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function inputDecimal() {
-        if (waitingForOperand) {
+        if (shouldResetScreen) {
             currentInput = '0.';
-            waitingForOperand = false;
+            shouldResetScreen = false;
         } else if (!currentInput.includes('.')) {
             currentInput += '.';
         }
@@ -93,73 +115,40 @@ document.addEventListener('DOMContentLoaded', () => {
     function clearAll() {
         currentInput = '0';
         previousInput = '';
-        operator = null;
-        waitingForOperand = false;
+        currentOperator = null;
+        shouldResetScreen = false;
         updateDisplay();
-        resultEl.textContent = '';
+        subtextEl.textContent = '';
     }
 
     function backspace() {
-        if (waitingForOperand) return;
-        currentInput = currentInput.slice(0, -1);
-        if (currentInput === '' || currentInput === '-') currentInput = '0';
+        if (shouldResetScreen) return;
+        if (currentInput.length === 1 || (currentInput === '-0')) {
+            currentInput = '0';
+        } else {
+            currentInput = currentInput.slice(0, -1);
+            if (currentInput === '') currentInput = '0';
+        }
         updateDisplay();
     }
 
     function negate() {
-        currentInput = String(parseFloat(currentInput) * -1);
+        currentInput = (parseFloat(currentInput) * -1).toString();
         updateDisplay();
     }
 
     function percent() {
-        currentInput = String(parseFloat(currentInput) / 100);
+        currentInput = (parseFloat(currentInput) / 100).toString();
         updateDisplay();
     }
 
-    function sqrt() {
-        const val = parseFloat(currentInput);
-        if (val < 0) {
-            resultEl.textContent = 'Invalid input';
-            setTimeout(() => { resultEl.textContent = ''; }, 1000);
-            return;
-        }
-        currentInput = String(Math.sqrt(val));
-        updateDisplay();
-        addToHistory(`√(${val}) = ${currentInput}`);
-        waitingForOperand = true;
-    }
-
-    function square() {
-        const val = parseFloat(currentInput);
-        currentInput = String(val * val);
-        updateDisplay();
-        addToHistory(`${val}² = ${currentInput}`);
-        waitingForOperand = true;
-    }
-
-    function reciprocal() {
-        const val = parseFloat(currentInput);
-        if (val === 0) {
-            resultEl.textContent = 'Cannot divide by zero';
-            setTimeout(() => { resultEl.textContent = ''; }, 1000);
-            return;
-        }
-        currentInput = String(1 / val);
-        updateDisplay();
-        addToHistory(`1/(${val}) = ${currentInput}`);
-        waitingForOperand = true;
-    }
-
-    function handleOperator(nextOp) {
-        const inputVal = parseFloat(currentInput);
-        if (isNaN(inputVal)) return;
-
-        if (previousInput !== '' && operator && !waitingForOperand) {
+    function handleOperator(op) {
+        if (currentOperator !== null && !shouldResetScreen) {
             evaluate();
         }
         previousInput = currentInput;
-        operator = nextOp;
-        waitingForOperand = true;
+        currentOperator = op;
+        shouldResetScreen = true;
         updateDisplay();
     }
 
@@ -175,12 +164,14 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (key === '+' || key === '-' || key === '*' || key === '/') {
             e.preventDefault();
             let op = key;
-            if (key === '*') op = '*';
-            if (key === '/') op = '/';
+            if (key === '*') op = '×';
+            if (key === '/') op = '÷';
             handleOperator(op);
         } else if (key === 'Enter' || key === '=') {
             e.preventDefault();
-            if (previousInput && operator && !waitingForOperand) evaluate();
+            if (currentOperator !== null && !shouldResetScreen) {
+                evaluate();
+            }
         } else if (key === 'Escape') {
             e.preventDefault();
             clearAll();
@@ -190,16 +181,10 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (key === '%') {
             e.preventDefault();
             percent();
-        } else if (key === 's') { // square root
-            e.preventDefault();
-            sqrt();
-        } else if (key === '^') { // square
-            e.preventDefault();
-            square();
         }
     }
 
-    // Event listeners for buttons
+    // Attach event listeners
     document.querySelectorAll('.btn.number').forEach(btn => {
         btn.addEventListener('click', () => inputNumber(btn.getAttribute('data-value')));
     });
@@ -211,19 +196,17 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('[data-action="negate"]').addEventListener('click', negate);
     document.querySelector('[data-action="percent"]').addEventListener('click', percent);
     document.querySelector('[data-action="equals"]').addEventListener('click', () => {
-        if (previousInput && operator && !waitingForOperand) evaluate();
+        if (currentOperator !== null && !shouldResetScreen) {
+            evaluate();
+        }
     });
     document.querySelectorAll('.btn.operator').forEach(btn => {
         btn.addEventListener('click', () => handleOperator(btn.getAttribute('data-op')));
     });
-    document.querySelector('[data-action="sqrt"]').addEventListener('click', sqrt);
-    document.querySelector('[data-action="square"]').addEventListener('click', square);
-    document.querySelector('[data-action="reciprocal"]').addEventListener('click', reciprocal);
-    document.querySelector('[data-action="clear-history"]').addEventListener('click', clearHistory);
     clearHistoryBtn.addEventListener('click', clearHistory);
 
     // Theme toggle
-    themeSwitch.addEventListener('change', (e) => {
+    themeToggle.addEventListener('change', (e) => {
         if (e.target.checked) {
             document.body.classList.add('light');
         } else {
@@ -231,7 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Keyboard events
+    // Keyboard listener
     window.addEventListener('keydown', handleKeyboard);
 
     // Initial display
