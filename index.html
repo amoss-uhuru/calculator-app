@@ -10,51 +10,56 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="calculator-wrapper">
-        <div class="theme-switch">
+    <div class="calculator-container">
+        <div class="theme-toggle">
             <i class="fas fa-sun"></i>
-            <label class="toggle">
-                <input type="checkbox" id="themeToggle">
-                <span class="toggle-slider"></span>
+            <label class="switch">
+                <input type="checkbox" id="themeSwitch">
+                <span class="slider round"></span>
             </label>
             <i class="fas fa-moon"></i>
         </div>
         <div class="calculator">
-            <div class="display">
+            <div class="display-area">
                 <div class="expression" id="expression">0</div>
-                <div class="subtext" id="subtext"></div>
+                <div class="result" id="result"></div>
             </div>
             <div class="buttons">
+                <!-- Row 1: AC, backspace, %, divide -->
                 <button class="btn function" data-action="clear">AC</button>
-                <button class="btn function" data-action="negate">±</button>
+                <button class="btn function" data-action="backspace"><i class="fas fa-backspace"></i></button>
                 <button class="btn function" data-action="percent">%</button>
-                <button class="btn operator" data-op="÷">÷</button>
+                <button class="btn operator" data-op="/">÷</button>
 
+                <!-- Row 2: 7,8,9, multiply -->
                 <button class="btn number" data-value="7">7</button>
                 <button class="btn number" data-value="8">8</button>
                 <button class="btn number" data-value="9">9</button>
-                <button class="btn operator" data-op="×">×</button>
+                <button class="btn operator" data-op="*">×</button>
 
+                <!-- Row 3: 4,5,6, subtract -->
                 <button class="btn number" data-value="4">4</button>
                 <button class="btn number" data-value="5">5</button>
                 <button class="btn number" data-value="6">6</button>
                 <button class="btn operator" data-op="-">−</button>
 
+                <!-- Row 4: 1,2,3, add -->
                 <button class="btn number" data-value="1">1</button>
                 <button class="btn number" data-value="2">2</button>
                 <button class="btn number" data-value="3">3</button>
                 <button class="btn operator" data-op="+">+</button>
 
-                <button class="btn number zero" data-value="0">0</button>
+                <!-- Row 5: 0, ., negate, equals -->
+                <button class="btn number" data-value="0">0</button>
                 <button class="btn number" data-value=".">.</button>
-                <button class="btn function" data-action="backspace"><i class="fas fa-backspace"></i></button>
+                <button class="btn function" data-action="negate">±</button>
                 <button class="btn equals" data-action="equals">=</button>
             </div>
         </div>
         <div class="history-panel">
             <div class="history-header">
-                <h3><i class="fas fa-clock"></i> Recent</h3>
-                <button id="clearHistoryBtn" class="clear-history">Clear</button>
+                <h3><i class="fas fa-history"></i> History</h3>
+                <button id="clearHistoryBtn" class="clear-history-btn">Clear</button>
             </div>
             <ul id="historyList">
                 <li class="empty-history">No calculations yet</li>
