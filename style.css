@@ -1,106 +1,285 @@
-body {
-  font-family: Arial, sans-serif;
-  background: linear-gradient(135deg, #1e1e2f, #12121c);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  margin: 0;
+/* style.css */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-.container {
-  display: flex;
-  gap: 20px;
+body {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #0a0f1e 0%, #0a0c14 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    transition: background 0.3s, color 0.3s;
+}
+
+body.light {
+    background: linear-gradient(135deg, #e0e5f0, #f5f7fc);
+    color: #1e293b;
+}
+
+.calculator-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+    max-width: 900px;
+    width: 100%;
+    justify-content: center;
+    align-items: flex-start;
 }
 
 .calculator {
-  background: #2d2d44;
-  padding: 20px;
-  border-radius: 15px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-  width: 260px;
+    background: rgba(20, 25, 40, 0.8);
+    backdrop-filter: blur(16px);
+    border-radius: 32px;
+    padding: 24px;
+    box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    width: 100%;
+    max-width: 460px;
+    transition: all 0.3s;
 }
 
-#display {
-  width: 100%;
-  height: 60px;
-  margin-bottom: 15px;
-  text-align: right;
-  font-size: 26px;
-  border: none;
-  padding: 10px;
-  border-radius: 10px;
-  background: #444;
-  color: white;
+body.light .calculator {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(0, 0, 0, 0.08);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+}
+
+.theme-toggle {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #fff;
+}
+
+body.light .theme-toggle {
+    color: #1e293b;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 52px;
+    height: 26px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #3b82f6;
+    transition: 0.3s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: #f59e0b;
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+.display-area {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 24px;
+    padding: 20px;
+    margin-bottom: 24px;
+    text-align: right;
+    word-wrap: break-word;
+    word-break: break-all;
+}
+
+body.light .display-area {
+    background: #f1f5f9;
+}
+
+.expression {
+    font-size: 2rem;
+    font-weight: 500;
+    color: #f1f5f9;
+    min-height: 3rem;
+}
+
+body.light .expression {
+    color: #0f172a;
+}
+
+.result {
+    font-size: 1.2rem;
+    color: #94a3b8;
+    margin-top: 8px;
+}
+
+body.light .result {
+    color: #475569;
 }
 
 .buttons {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
 }
 
-button {
-  height: 55px;
-  font-size: 18px;
-  border: none;
-  border-radius: 10px;
-  background: #4e4e7a;
-  color: white;
-  cursor: pointer;
-  transition: 0.2s;
+.btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: none;
+    border-radius: 24px;
+    padding: 16px 0;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #f8fafc;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
 }
 
-button:hover {
-  background: #6c6cb3;
-  transform: scale(1.05);
+body.light .btn {
+    background: #eef2ff;
+    color: #0f172a;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
 
-.equals {
-  background: #ff7a18;
+.btn:hover {
+    background: #3b82f6;
+    color: white;
+    transform: scale(0.98);
 }
 
-.equals:hover {
-  background: #ff9a3c;
+.btn.function {
+    background: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
 }
 
-.zero {
-  grid-column: span 2;
+body.light .btn.function {
+    background: #dbeafe;
+    color: #2563eb;
 }
 
-/* HISTORY PANEL */
+.btn.operator {
+    background: rgba(245, 158, 11, 0.2);
+    color: #fbbf24;
+}
 
-.history {
-  background: #2d2d44;
-  padding: 15px;
-  border-radius: 15px;
-  width: 200px;
-  color: white;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+body.light .btn.operator {
+    background: #fffbeb;
+    color: #d97706;
+}
+
+.btn.equals {
+    background: linear-gradient(135deg, #3b82f6, #9333ea);
+    color: white;
+}
+
+.btn.equals:hover {
+    filter: brightness(1.05);
+}
+
+.btn.sci {
+    font-size: 1rem;
+    background: rgba(100, 116, 139, 0.3);
+}
+
+.history-panel {
+    background: rgba(20, 25, 40, 0.7);
+    backdrop-filter: blur(12px);
+    border-radius: 28px;
+    padding: 20px;
+    width: 260px;
+    border: 1px solid rgba(255,255,255,0.1);
+    transition: all 0.3s;
+}
+
+body.light .history-panel {
+    background: rgba(255,255,255,0.8);
+    border-color: rgba(0,0,0,0.05);
 }
 
 .history-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    color: #cbd5e1;
 }
 
-.history button {
-  background: #ff4d4d;
-  font-size: 12px;
-  padding: 5px 10px;
+body.light .history-header {
+    color: #1e293b;
+}
+
+.clear-history-btn {
+    background: none;
+    border: none;
+    color: #f97316;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 500;
 }
 
 #historyList {
-  list-style: none;
-  padding: 0;
-  margin-top: 10px;
-  max-height: 200px;
-  overflow-y: auto;
+    list-style: none;
+    max-height: 400px;
+    overflow-y: auto;
 }
 
 #historyList li {
-  padding: 5px 0;
-  border-bottom: 1px solid #444;
-  font-size: 14px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    font-size: 0.9rem;
+    color: #cbd5e6;
+    word-break: break-word;
+}
+
+body.light #historyList li {
+    border-bottom-color: rgba(0,0,0,0.05);
+    color: #334155;
+}
+
+.empty-history {
+    color: #6b7280;
+    text-align: center;
+    font-style: italic;
+}
+
+@media (max-width: 700px) {
+    .calculator-container {
+        flex-direction: column;
+        align-items: center;
+    }
+    .history-panel {
+        width: 100%;
+        max-width: 460px;
+    }
+    .theme-toggle {
+        top: 10px;
+        right: 10px;
+    }
 }
