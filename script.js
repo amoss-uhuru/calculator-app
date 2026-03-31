@@ -1,17 +1,17 @@
-// script.js
+// script.js - FIXED calculator logic
 document.addEventListener('DOMContentLoaded', () => {
-    // DOM references
+    // DOM elements
     const expressionEl = document.getElementById('expression');
-    const subtextEl = document.getElementById('subtext');
+    const resultEl = document.getElementById('result');
     const historyList = document.getElementById('historyList');
     const clearHistoryBtn = document.getElementById('clearHistoryBtn');
-    const themeToggle = document.getElementById('themeToggle');
+    const themeSwitch = document.getElementById('themeSwitch');
 
     // Calculator state
-    let currentInput = '0';
-    let previousInput = '';
-    let currentOperator = null;
-    let shouldResetScreen = false;
+    let currentInput = '0';      // current number being entered
+    let previousInput = '';       // previous number before operator
+    let currentOperator = null;   // operator waiting to be applied
+    let waitingForSecondOperand = false;  // if true, next number will start fresh
     let history = [];
 
     // Helper: format numbers (avoid excessive decimals)
@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             expressionEl.textContent = formatNumber(currentInput);
         }
-        subtextEl.textContent = '';
+        resultEl.textContent = '';
     }
 
     // Add to history panel
@@ -59,8 +59,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const prev = parseFloat(previousInput);
         const current = parseFloat(currentInput);
         if (isNaN(prev) || isNaN(current)) {
-            subtextEl.textContent = 'Invalid input';
-            setTimeout(() => subtextEl.textContent = '', 1000);
+            resultEl.textContent = 'Invalid input';
+            setTimeout(() => resultEl.textContent = '', 1000);
             return;
         }
 
@@ -68,11 +68,11 @@ document.addEventListener('DOMContentLoaded', () => {
         switch (currentOperator) {
             case '+': result = prev + current; break;
             case '-': result = prev - current; break;
-            case '×': result = prev * current; break;
-            case '÷':
+            case '*': result = prev * current; break;
+            case '/':
                 if (current === 0) {
-                    subtextEl.textContent = 'Cannot divide by zero';
-                    setTimeout(() => subtextEl.textContent = '', 1000);
+                    resultEl.textContent = 'Cannot divide by zero';
+                    setTimeout(() => resultEl.textContent = '', 1000);
                     return;
                 }
                 result = prev / current;
@@ -87,26 +87,35 @@ document.addEventListener('DOMContentLoaded', () => {
         currentInput = formattedResult;
         previousInput = '';
         currentOperator = null;
-        shouldResetScreen = true;
+        waitingForSecondOperand = true;  // next number starts fresh
         updateDisplay();
     }
 
     // Number input
     function inputNumber(num) {
-        if (shouldResetScreen) {
+        if (waitingForSecondOperand) {
             currentInput = num;
-            shouldResetScreen = false;
+            waitingForSecondOperand = false;
         } else {
-            currentInput = currentInput === '0' ? num : currentInput + num;
+            // Prevent multiple leading zeros
+            if (currentInput === '0' && num === '0') return;
+            if (currentInput === '0' && num !== '.') {
+                currentInput = num;
+            } else {
+                currentInput += num;
+            }
         }
         updateDisplay();
     }
 
     function inputDecimal() {
-        if (shouldResetScreen) {
+        if (waitingForSecondOperand) {
             currentInput = '0.';
-            shouldResetScreen = false;
-        } else if (!currentInput.includes('.')) {
+            waitingForSecondOperand = false;
+            updateDisplay();
+            return;
+        }
+        if (!currentInput.includes('.')) {
             currentInput += '.';
         }
         updateDisplay();
@@ -116,13 +125,13 @@ document.addEventListener('DOMContentLoaded', () => {
         currentInput = '0';
         previousInput = '';
         currentOperator = null;
-        shouldResetScreen = false;
+        waitingForSecondOperand = false;
         updateDisplay();
-        subtextEl.textContent = '';
+        resultEl.textContent = '';
     }
 
     function backspace() {
-        if (shouldResetScreen) return;
+        if (waitingForSecondOperand) return;
         if (currentInput.length === 1 || (currentInput === '-0')) {
             currentInput = '0';
         } else {
@@ -143,12 +152,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function handleOperator(op) {
-        if (currentOperator !== null && !shouldResetScreen) {
+        const inputValue = parseFloat(currentInput);
+        if (isNaN(inputValue)) return;
+
+        if (currentOperator !== null && !waitingForSecondOperand) {
             evaluate();
         }
         previousInput = currentInput;
         currentOperator = op;
-        shouldResetScreen = true;
+        waitingForSecondOperand = true;
         updateDisplay();
     }
 
@@ -164,12 +176,12 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (key === '+' || key === '-' || key === '*' || key === '/') {
             e.preventDefault();
             let op = key;
-            if (key === '*') op = '×';
-            if (key === '/') op = '÷';
+            if (key === '*') op = '*';
+            if (key === '/') op = '/';
             handleOperator(op);
         } else if (key === 'Enter' || key === '=') {
             e.preventDefault();
-            if (currentOperator !== null && !shouldResetScreen) {
+            if (currentOperator !== null && !waitingForSecondOperand) {
                 evaluate();
             }
         } else if (key === 'Escape') {
@@ -196,7 +208,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('[data-action="negate"]').addEventListener('click', negate);
     document.querySelector('[data-action="percent"]').addEventListener('click', percent);
     document.querySelector('[data-action="equals"]').addEventListener('click', () => {
-        if (currentOperator !== null && !shouldResetScreen) {
+        if (currentOperator !== null && !waitingForSecondOperand) {
             evaluate();
         }
     });
@@ -206,7 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
     clearHistoryBtn.addEventListener('click', clearHistory);
 
     // Theme toggle
-    themeToggle.addEventListener('change', (e) => {
+    themeSwitch.addEventListener('change', (e) => {
         if (e.target.checked) {
             document.body.classList.add('light');
         } else {
