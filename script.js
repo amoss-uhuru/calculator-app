@@ -1,4 +1,4 @@
-// script.js - FIXED calculator logic
+// script.js 
 document.addEventListener('DOMContentLoaded', () => {
     // DOM elements
     const expressionEl = document.getElementById('expression');
@@ -8,13 +8,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const themeSwitch = document.getElementById('themeSwitch');
 
     // Calculator state
-    let currentInput = '0';      // current number being entered
-    let previousInput = '';       // previous number before operator
-    let currentOperator = null;   // operator waiting to be applied
-    let waitingForSecondOperand = false;  // if true, next number will start fresh
+    let currentInput = '0';        // current number being built
+    let previousInput = '';         // previous number before operator
+    let currentOperator = null;     // pending operator
+    let shouldResetInput = false;   // whether next number should replace current
     let history = [];
 
-    // Helper: format numbers (avoid excessive decimals)
+    // Format numbers (remove trailing zeros)
     function formatNumber(numStr) {
         let num = parseFloat(numStr);
         if (isNaN(num)) return '0';
@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return num.toFixed(8).replace(/\.?0+$/, '');
     }
 
-    // Update main display
+    // Update the main display
     function updateDisplay() {
         if (currentOperator && previousInput !== '') {
             expressionEl.textContent = `${formatNumber(previousInput)} ${currentOperator} ${formatNumber(currentInput)}`;
@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
         resultEl.textContent = '';
     }
 
-    // Add to history panel
+    // Add entry to history
     function addToHistory(entry) {
         history.unshift(entry);
         if (history.length > 20) history.pop();
@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderHistory();
     }
 
-    // Core evaluation
+    // Perform pending calculation
     function evaluate() {
         if (previousInput === '' || currentOperator === null) return;
 
@@ -87,18 +87,18 @@ document.addEventListener('DOMContentLoaded', () => {
         currentInput = formattedResult;
         previousInput = '';
         currentOperator = null;
-        waitingForSecondOperand = true;  // next number starts fresh
+        shouldResetInput = true;   // next number will start fresh
         updateDisplay();
     }
 
-    // Number input
+    // Handle number input
     function inputNumber(num) {
-        if (waitingForSecondOperand) {
+        // If we should reset input (after equals or operator), start fresh
+        if (shouldResetInput) {
             currentInput = num;
-            waitingForSecondOperand = false;
+            shouldResetInput = false;
         } else {
-            // Prevent multiple leading zeros
-            if (currentInput === '0' && num === '0') return;
+            // Prevent leading zeros: if currentInput is "0" and not decimal, replace
             if (currentInput === '0' && num !== '.') {
                 currentInput = num;
             } else {
@@ -109,9 +109,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function inputDecimal() {
-        if (waitingForSecondOperand) {
+        if (shouldResetInput) {
             currentInput = '0.';
-            waitingForSecondOperand = false;
+            shouldResetInput = false;
             updateDisplay();
             return;
         }
@@ -125,13 +125,13 @@ document.addEventListener('DOMContentLoaded', () => {
         currentInput = '0';
         previousInput = '';
         currentOperator = null;
-        waitingForSecondOperand = false;
+        shouldResetInput = false;
         updateDisplay();
         resultEl.textContent = '';
     }
 
     function backspace() {
-        if (waitingForSecondOperand) return;
+        if (shouldResetInput) return;
         if (currentInput.length === 1 || (currentInput === '-0')) {
             currentInput = '0';
         } else {
@@ -155,12 +155,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const inputValue = parseFloat(currentInput);
         if (isNaN(inputValue)) return;
 
-        if (currentOperator !== null && !waitingForSecondOperand) {
+        // If there's already an operator and we're not resetting input, evaluate first
+        if (currentOperator !== null && !shouldResetInput) {
             evaluate();
         }
         previousInput = currentInput;
         currentOperator = op;
-        waitingForSecondOperand = true;
+        shouldResetInput = true;   // next number will replace current input
         updateDisplay();
     }
 
@@ -181,7 +182,7 @@ document.addEventListener('DOMContentLoaded', () => {
             handleOperator(op);
         } else if (key === 'Enter' || key === '=') {
             e.preventDefault();
-            if (currentOperator !== null && !waitingForSecondOperand) {
+            if (currentOperator !== null && !shouldResetInput) {
                 evaluate();
             }
         } else if (key === 'Escape') {
@@ -196,7 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Attach event listeners
+    // --- Event listeners ---
     document.querySelectorAll('.btn.number').forEach(btn => {
         btn.addEventListener('click', () => inputNumber(btn.getAttribute('data-value')));
     });
@@ -208,7 +209,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('[data-action="negate"]').addEventListener('click', negate);
     document.querySelector('[data-action="percent"]').addEventListener('click', percent);
     document.querySelector('[data-action="equals"]').addEventListener('click', () => {
-        if (currentOperator !== null && !waitingForSecondOperand) {
+        if (currentOperator !== null && !shouldResetInput) {
             evaluate();
         }
     });
